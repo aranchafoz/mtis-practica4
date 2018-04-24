@@ -1,4 +1,7 @@
 var stompit = require('stompit');
+var readline = require('readline-sync');
+var yesno = require('yesno');
+
 
 let connectOptions = {
   'host': 'localhost',
@@ -11,7 +14,7 @@ let connectOptions = {
   }
 };
 
-const OFFICE1 = {
+let OFFICE1 = {
   temperature: {  // degrees
     min: 17,
     max: 27
@@ -22,7 +25,7 @@ const OFFICE1 = {
   }
 }
 
-const OFFICE2 = {
+let OFFICE2 = {
   temperature: {  // degrees
     min: 14,
     max: 25
@@ -48,13 +51,26 @@ stompit.connect(connectOptions, function(error, client) {
     console.log('\x1b[32m', 'Central console: Connected successfully to ActiveMQ', '\x1b[0m')
   }
 
+
+  yesno.ask('Do you want to set actuators parameters?', false, function(ok) {
+      if(ok) {
+        setOfficeParameters()
+        readSensorsData(client)
+      } else {
+        readSensorsData(client)
+      }
+  });
+
+});
+
+
+function readSensorsData(client) {
   readOffice1Temperature(client)
   readOffice1Ilumination(client)
 
   readOffice2Temperature(client)
   readOffice2Ilumination(client)
-
-});
+}
 
 
 
@@ -238,4 +254,80 @@ function sendAction(action, sensor, office, client) {
   var frame = client.send(sendHeaders);
   frame.write(action);
   frame.end();
+}
+
+
+// UTILS
+
+function setOfficeParameters() {
+
+  // const rl = readline.createInterface({
+  //   input: process.stdin,
+  //   output: process.stdout
+  // });
+
+  console.log('-- Office 1 --')
+  console.log('\t Temperature')
+
+  let input = ''
+
+  do {
+    input = readline.question('-> Minimum: ')
+    OFFICE1.temperature.min = parseInt(input, 10)
+  } while( !validateInputType('number', input) )
+  do {
+    input = readline.question('-> Maximum: ')
+    OFFICE1.temperature.max = parseInt(input, 10)
+  } while( !validateInputType('number', input, OFFICE1.temperature.min) )
+  console.log('\t Illumination')
+  do {
+    input = readline.question('-> Minimum: ')
+    OFFICE1.illumination.min = parseInt(input, 10)
+  } while( !validateInputType('number', input) )
+  do {
+    input = readline.question('-> Maximum: ')
+    OFFICE1.illumination.max = parseInt(input, 10)
+  } while( !validateInputType('number', input, OFFICE1.illumination.min) )
+
+  console.log('-- Office 2 --')
+  console.log('\t Temperature')
+  do {
+    input = readline.question('-> Minimum: ')
+    OFFICE2.temperature.min = parseInt(input, 10)
+  } while( !validateInputType('number', input) )
+  do {
+    input = readline.question('-> Maximum: ')
+    OFFICE2.temperature.max = parseInt(input, 10)
+  } while( !validateInputType('number', input, OFFICE2.temperature.min) )
+  console.log('\t Illumination')
+  do {
+    input = readline.question('-> Minimum: ')
+    OFFICE2.illumination.min = parseInt(input, 10)
+  } while( !validateInputType('number', input) )
+  do {
+    input = readline.question('-> Maximum: ')
+    OFFICE2.illumination.max = parseInt(input, 10)
+  } while( !validateInputType('number', input, OFFICE2.illumination.min) )
+}
+
+function validateInputType(type, input, min) {
+  let data = parseInt(input, 10)
+  if(isNaN(data)) {
+    return false;
+  } else {
+    if(validateMaxGreaterThanMin(data, min)){
+      return true;
+    } else {
+      console.log('\x1b[31m', 'Maximum has to be greater than minimum\x1b[0m')
+      return false;
+    }
+  }
+}
+
+function validateMaxGreaterThanMin(max, min) {
+  if(min) {
+    return (max > min)
+  } else {
+    return true
+  }
 }
