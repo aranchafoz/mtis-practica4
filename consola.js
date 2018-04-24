@@ -8,8 +8,8 @@ let connectOptions = {
   'port': 61613,
   'connectHeaders': {
     'host': '/',
-    'login': 'arancha',
-    'passcode': '12345',
+    'login': '', //'arancha',
+    'passcode':  '', //'12345',
     'heart-beat': '5000,5000'
   }
 };
@@ -42,11 +42,14 @@ const actions = {
 }
 
 
+console.log('\x1b[90m', 'Please, enter your credentials for start\x1b[0m');
+enterCredentials()
+
 stompit.connect(connectOptions, function(error, client) {
 
   if (error) {
-    console.log('Connect error: ' + error.message);
-    return;
+    console.log('\x1b[31m', 'Connect error: ' + error.message, '\x1b[0m');
+    return false;
   } else {
     console.log('\x1b[32m', 'Central console: Connected successfully to ActiveMQ', '\x1b[0m')
   }
@@ -61,8 +64,8 @@ stompit.connect(connectOptions, function(error, client) {
       }
   });
 
-});
 
+});
 
 function readSensorsData(client) {
   readOffice1Temperature(client)
@@ -330,4 +333,12 @@ function validateMaxGreaterThanMin(max, min) {
   } else {
     return true
   }
+}
+
+function enterCredentials() {
+  let login = readline.question('\x1b[90m Login: \x1b[0m')
+  let passcode = readline.question('\x1b[90m Passcode: \x1b[0m')
+
+  connectOptions.connectHeaders.login = login
+  connectOptions.connectHeaders.passcode = passcode
 }
