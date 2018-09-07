@@ -10,7 +10,7 @@ let connectOptions = {
     'host': '/',
     'login': '', //'arancha',
     'passcode':  '', //'12345',
-    'heart-beat': '5000,5000'
+    'heart-beat': '60000,60000'
   }
 };
 
